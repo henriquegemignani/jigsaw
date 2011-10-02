@@ -1,0 +1,9 @@
+
+*.sdf
+/Debug
+/ipch
+/Release
+/jigsaw/Debug
+/jigsaw/Release
+/jigsaw/jigsaw.vcxproj.user
+*.suo
