@@ -453,7 +453,7 @@ int main(int argc, char *argv[]) {
             SDL_Delay( ( 1000 / FRAMES_PER_SECOND ) - fps.get_ticks() );
     }
     FILE *out = fopen("out.txt", "a");
-	fprintf(out, "Puzzle \"%s\" - ", argv[1]);
+	fprintf(out, "Puzzle \"%s\" - %d x %d: ", argv[1], nx, ny);
 	if((pieces->get_matches()) == total) {
 		fprintf(out, "Success with %d moves in ", moves);
 		printTime(out, timer.get_ticks());
@@ -462,7 +462,6 @@ int main(int argc, char *argv[]) {
 		printTime(out, timer.get_ticks());
 		fprintf(out, " with %d moves", moves);
 	}
-    printTime(out, timer.get_ticks());
     fprintf(out, ".\n");
     fclose(out);
 
