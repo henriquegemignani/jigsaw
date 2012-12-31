@@ -19,7 +19,7 @@
 #define SCREEN_WIDTH 1000
 #define SCREEN_HEIGHT 1000
 #define SCREEN_BPP 32
-#define MAX_SCREEN_SCALE 0.9f
+#define MAX_SCREEN_SCALE 0.9
 
 int RESOLUTION_WIDTH = -1, RESOLUTION_HEIGHT = -1;
 
@@ -178,8 +178,8 @@ void clean_up() {
     SDL_Quit();
 }
 
-void minmax(float *a, float *b) {
-    float aux = *a;
+void minmax(double *a, double *b) {
+    double aux = *a;
     *a = std::min(*a, *b);
     *b = std::max(aux, *b);
 }
@@ -231,17 +231,17 @@ int main(int argc, char *argv[]) {
 
     int screenwidth = image_width, screenheight = image_height;
 
-    float xmul = (float)(screenwidth) / SCREEN_WIDTH,
-          ymul = (float)(screenheight) / SCREEN_HEIGHT;
+    double xmul = (double)(screenwidth) / SCREEN_WIDTH,
+          ymul = (double)(screenheight) / SCREEN_HEIGHT;
 
     nx = (int)(nx * xmul);
     ny = (int)(ny * ymul);
 
     int total = nx*ny;
 
-	float scale = 1.0f;
+	double scale = 1.0;
     if(argc >= 4) {
-        scale = (float) atof(argv[3]);
+        scale = (double) atof(argv[3]);
     } else {
 		if(RESOLUTION_WIDTH * MAX_SCREEN_SCALE < screenwidth)
 			scale = RESOLUTION_WIDTH * MAX_SCREEN_SCALE / screenwidth;
@@ -262,11 +262,11 @@ int main(int argc, char *argv[]) {
     int moves = 0;
 
     int selected_x = -1, selected_y = -1;
-    float offset_x, offset_y;
-    float position_x, position_y;
+    double offset_x, offset_y;
+    double position_x, position_y;
 
-    float drag_offset_x, drag_offset_y;
-    float drag_end_x, drag_end_y;
+    double drag_offset_x, drag_offset_y;
+    double drag_end_x, drag_end_y;
 	drag_offset_x = drag_offset_y = drag_end_x = drag_end_y = -1;
     int rectsizex = -1, rectsizey = -1;
     bool leftdrag = false, rightdrag = false, rect_up = false;
@@ -293,23 +293,23 @@ int main(int argc, char *argv[]) {
             }
             else if( event.type == SDL_MOUSEBUTTONDOWN ) {
                 if(event.button.button == SDL_BUTTON_LEFT && !rightdrag) {
-                    offset_x = (float)(nx) * event.motion.x / screenwidth;
-                    offset_y = (float)(ny) * event.motion.y / screenheight;
+                    offset_x = (double)(nx) * event.motion.x / screenwidth;
+                    offset_y = (double)(ny) * event.motion.y / screenheight;
 
 					if(rect_up) {
 						int startx = (int)(drag_offset_x);
 						int starty = (int)(drag_offset_y);
 						for(int i = 0; i < rectsizex; i++)
 							for(int j = 0; j < rectsizey; j++)
-								pieces->get_current(startx + i, starty + j)->set_color(Color(1.0f, 1.0f, 1.0f));
+								pieces->get_current(startx + i, starty + j)->set_color(Color(1.0, 1.0, 1.0));
 					}
 
 
                     rect_up = !(offset_x < drag_offset_x || drag_end_x + 1 < offset_x ||
 						offset_y < drag_offset_y || drag_end_y + 1 < offset_y);
                     if(!rect_up) {
-                        drag_end_x = drag_offset_x = (float)(nx) * event.motion.x / screenwidth;
-                        drag_end_y = drag_offset_y = (float)(ny) * event.motion.y / screenheight;
+                        drag_end_x = drag_offset_x = (double)(nx) * event.motion.x / screenwidth;
+                        drag_end_y = drag_offset_y = (double)(ny) * event.motion.y / screenheight;
                         rectsizex = rectsizey = 1;
                         rect_up = true;
                     }
@@ -329,14 +329,14 @@ int main(int argc, char *argv[]) {
 						int starty = (int)(drag_offset_y);
 						for(int i = 0; i < rectsizex; i++)
 							for(int j = 0; j < rectsizey; j++)
-								pieces->get_current(startx + i, starty + j)->set_color(Color(1.0f, 1.0f, 1.0f));
+								pieces->get_current(startx + i, starty + j)->set_color(Color(1.0, 1.0, 1.0));
 					}
 
                     rect_up = false;
 
                     // Store the rect origin.
-                    drag_offset_x = (float)(nx) * event.motion.x / screenwidth;
-                    drag_offset_y = (float)(ny) * event.motion.y / screenheight;
+                    drag_offset_x = (double)(nx) * event.motion.x / screenwidth;
+                    drag_offset_y = (double)(ny) * event.motion.y / screenheight;
                 }
 
             } else if( event.type == SDL_MOUSEBUTTONUP ) {
@@ -351,7 +351,7 @@ int main(int argc, char *argv[]) {
 						{
 							for(int i = 0; i < rectsizex; i++)
 								for(int j = 0; j < rectsizey; j++)
-									pieces->get_current(startx + i, starty + j)->set_alpha(1.0f);
+									pieces->get_current(startx + i, starty + j)->set_alpha(1.0);
 						}
                         if(startx >= finalx) {
                             for(int i = 0; i < rectsizex; i++) {
@@ -381,8 +381,8 @@ int main(int argc, char *argv[]) {
 
                 } else if(event.button.button == SDL_BUTTON_RIGHT) {
                     // Store the rect end
-                    drag_end_x = (float)(nx) * event.motion.x / screenwidth;
-                    drag_end_y = (float)(ny) * event.motion.y / screenheight;
+                    drag_end_x = (double)(nx) * event.motion.x / screenwidth;
+                    drag_end_y = (double)(ny) * event.motion.y / screenheight;
 
                     // It's handy to have the end be to the bottom-right of the origin.
                     minmax(&drag_offset_x, &drag_end_x);
@@ -406,14 +406,14 @@ int main(int argc, char *argv[]) {
 						// Mouse pointer does not necessarily hold the origin, so fix it
 						for(int i = 0; i < rectsizex; i++)
 							for(int j = 0; j < rectsizey; j++)
-								pieces->get_current(startx + i, starty + j)->set_color(Color(0.5f, 0.5f, 1.0f));
+								pieces->get_current(startx + i, starty + j)->set_color(Color(0.5, 0.5, 1.0));
 					}
                 }
             }
             else if( event.type == SDL_MOUSEMOTION ) {
                 // Keep track of the mouse position in a handy format.
-                position_x = (float)(event.motion.x) / screenwidth;
-                position_y = (float)(event.motion.y) / screenheight;
+                position_x = (double)(event.motion.x) / screenwidth;
+                position_y = (double)(event.motion.y) / screenheight;
             }
             if( event.type == SDL_QUIT ) {
                 quit = true;
@@ -427,9 +427,9 @@ int main(int argc, char *argv[]) {
                     if(leftdrag)
                         continue;
                     else if(rect_up)
-                        glColor3f(0.50f, 0.50f, 1.0f);
+                        glColor3f(0.50, 0.50, 1.0);
                 } else
-                    glColor3f(1.0f, 1.0f, 1.0f);
+                    glColor3f(1.0, 1.0, 1.0);
                 pieces->get_current(i,j)->Render();
             }
 
@@ -442,19 +442,19 @@ int main(int argc, char *argv[]) {
             int starty = (int)(drag_offset_y);
 
             // Mouse pointer does not necessarily hold the origin, so fix it
-            float custom_offx = position_x + offset_x + (startx - selected_x) / (float)(nx);
+            double custom_offx = position_x + offset_x + (startx - selected_x) / (double)(nx);
             for(int i = 0; i < rectsizex; i++) {
-                float custom_offy = position_y + offset_y + (starty - selected_y) / (float)(ny);
+                double custom_offy = position_y + offset_y + (starty - selected_y) / (double)(ny);
                 for(int j = 0; j < rectsizey; j++) {
 					pieces->get_current(startx + i, starty + j)->CustomRender(custom_offx, custom_offy);
-                    custom_offy += 1.0f / ny;
+                    custom_offy += 1.0 / ny;
                 }
-                custom_offx += 1.0f / nx;
+                custom_offx += 1.0 / nx;
             }
         }
         if(rightdrag) {
             glEnable(GL_BLEND);
-            glRectf( drag_offset_x / nx, drag_offset_y / ny, position_x, position_y );
+            glRectd( drag_offset_x / nx, drag_offset_y / ny, position_x, position_y );
             glDisable(GL_BLEND);
         }
         //Update screen

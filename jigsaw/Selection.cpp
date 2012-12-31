@@ -11,7 +11,7 @@ void Selection::StartDrag(Vector2D origin) {
 	is_dragging = true;
 	if(is_active) {
 		CalculateDragOffset(origin);
-		UpdateColors(Color(1.0f, 1.0f, 1.0f));
+		UpdateColors(Color(1.0, 1.0, 1.0));
 	} else {
 		start = origin;
 	}
@@ -23,7 +23,7 @@ void Selection::EndDrag(Vector2D target) {
 	} else {
 		is_active = true;
 		end = target;
-		UpdateColors(Color(0.5f, 0.5f, 1.0f));
+		UpdateColors(Color(0.5, 0.5, 1.0));
 	}
 }
 
@@ -32,8 +32,8 @@ void Selection::Clear() {
 }
 
 void Selection::CalculateDragOffset(Vector2D origin) {
-	offset.x = (float)(pieces->width()) * origin.x;
-	offset.y = (float)(pieces->height()) * origin.y;
+	offset.x = (double)(pieces->width()) * origin.x;
+	offset.y = (double)(pieces->height()) * origin.y;
 
 	// Store the piece we're dragging.
 	selected_x = (int)(offset.x);

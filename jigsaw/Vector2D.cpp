@@ -1,84 +1,74 @@
-#include <math.h>
-#include "Vector2D.h"
+#include "vector2D.h"
 
-// Member functions
+#include <cmath>
+#include <assert.h>
 
-// Devolve a norma do vetor
-float Vector2D::length() const {
-    return sqrt((x * x) + (y * y));
+#define SWAPVARS(temp,var1,var2) temp = var1; var1 = var2; var2 = temp
+
+// Returns the norm-1.
+double Vector2D::NormOne() const {
+    return fabs(x) + fabs(y);
 }
-float Vector2D::norm_one() const {
-	return fabs(x) + fabs(y);
+
+double Vector2D::Length() const {
+    return sqrt(LengthSquared());
 }
-float Vector2D::angle() const {
+
+double Vector2D::Angle() const {
     return atan2(y, x);
 }
 
-// Metodos estaticos
-
-// Devolve a + b
-Vector2D Vector2D::Add(Vector2D a, Vector2D b) {
-    Vector2D ret;
-    ret.x = (a.x + b.x);
-    ret.y = (a.y + b.y);
-    return ret;
-}
-
-// Devolve a - b
-Vector2D Vector2D::Subtract(Vector2D a, Vector2D b) {
-    Vector2D ret;
-    ret.x = (a.x - b.x);
-    ret.y = (a.y - b.y);
-    return ret;
-}
-
-// Devolve scalar . a
-Vector2D Vector2D::Multiply(Vector2D a, float scalar) {
-    Vector2D ret;
-    ret.x = (a.x * scalar);
-    ret.y = (a.y * scalar);
-    return ret;
-}
-
-// Devolve <a,b>
-float Vector2D::InnerProduct(Vector2D a, Vector2D b) {
-    return (a.x * b.x) + (a.y * b.y);
-}
-
-// Devolve o vetor a normalizado
-Vector2D Vector2D::Normalized(Vector2D a) {
-    if (a.length() == 0) {
-        return a;
+Vector2D Vector2D::Normalize() const {
+    double norm = Length();
+    if (norm == 0) {
+        return *this;
     }
-
-    Vector2D ret;
-    ret.x = (a.x / a.length());
-    ret.y = (a.y / a.length());
-    return ret;
+    return (*this) / norm;
 }
 
-Vector2D Vector2D::Rotate(Vector2D a, float angle) {
-    float ca = cos(angle),
-    		 sa = sin(angle);
-    Vector2D ret;
-    ret.x = a.x * ca - a.y * sa;
-    ret.y = a.x * sa + a.y * ca;
-    return ret;
+Vector2D Vector2D::Rotate(const double angle) const {
+    double ca = cos(angle), sa = sin(angle);   
+    return Vector2D(x * ca - y * sa, x * sa + y * ca);
 }
 
-//Overload de operadores
-Vector2D operator+(const Vector2D& left_value,
-                   const Vector2D& right_value) {
-    return Vector2D::Add(left_value, right_value);
+Vector2D Vector2D::Scale(const Vector2D &scale) const {
+    return Vector2D(x * scale.x, y * scale.y);
 }
 
-Vector2D operator-(const Vector2D& left_value,
-                   const Vector2D& right_value) {
-    return Vector2D::Subtract(left_value, right_value);
+Vector2D& Vector2D::operator+=(const Vector2D &other) {
+    x += other.x;  
+    y += other.y;
+    return *this;
 }
 
+Vector2D& Vector2D::operator-=(const Vector2D &other) {
+    x -= other.x;
+    y -= other.y;
+    return *this;
+}
 
-Vector2D operator*(const Vector2D& left_value,
-                   const float& scalar) {
-    return Vector2D::Multiply(left_value, scalar);
+Vector2D Vector2D::operator+(const Vector2D &right) const {
+    return Vector2D::Add(*this, right);
+}
+Vector2D Vector2D::operator-(const Vector2D &right) const {
+    return Vector2D::Subtract(*this, right);
+}
+Vector2D Vector2D::operator-() const {
+    return Vector2D(-this->x, -this->y);
+}
+
+Vector2D Vector2D::operator*(const double   &scalar) const {
+    return Vector2D::Multiply(*this, scalar);
+}
+Vector2D Vector2D::operator/(const double   &scalar) const {
+    return Vector2D::Multiply(*this, 1.0 / scalar);
+}
+double Vector2D::operator*(const Vector2D &right) const {
+    return Vector2D::InnerProduct(*this, right);
+}
+
+///
+
+Vector2D operator*(const double  &scalar, const Vector2D &right) {
+    return Vector2D::Multiply(right, scalar);
 }
