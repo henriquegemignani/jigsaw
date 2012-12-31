@@ -1,8 +1,8 @@
 // Code wrote by Henrique Gemignani Passos Lima
 
 #include "SDL/SDL.h"
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_opengl.h>
+#include "SDL/SDL_image.h"
+#include "SDL/SDL_opengl.h"
 #include "Timer.h"
 #include "Piece.h"
 #include "PieceSet.h"
@@ -11,6 +11,9 @@
 #include <algorithm>
 #include <ctime>
 #include <cmath>
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 //Screen attributes
 #define SCREEN_WIDTH 1000
@@ -198,7 +201,11 @@ int main(int argc, char *argv[]) {
     //Quit flag
     bool quit = false;
 	if(argc == 1) {
+#ifdef _WIN32
+        MessageBox(HWND_DESKTOP, "No file given.", "Fatal Error", MB_OK | MB_ICONERROR);
+#else
 		fprintf(stderr, "No file given.\n");
+#endif
 		exit(1);
 	}
 
@@ -208,6 +215,14 @@ int main(int argc, char *argv[]) {
 
     int image_width, image_height;
     GLuint thetexture = loadTex(argv[1], &image_width, &image_height);
+    if(thetexture == 0) {
+#ifdef _WIN32
+        MessageBox(HWND_DESKTOP, "Invalid file.", "Fatal Error", MB_OK | MB_ICONERROR);
+#else
+		fprintf(stderr, "Invalid file.\n");
+#endif
+        exit(2);
+    }
     glBindTexture(GL_TEXTURE_2D, thetexture);
 
     int nx = 8, ny = 8;

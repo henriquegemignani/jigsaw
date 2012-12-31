@@ -7,3 +7,5 @@
 /jigsaw/Release
 /jigsaw/jigsaw.vcxproj.user
 *.suo
+/*.opensdf
+/jigsaw/*.aps
