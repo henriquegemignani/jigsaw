@@ -78,6 +78,7 @@
     <ClInclude Include="PieceSet.h" />
     <ClInclude Include="Selection.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="tools.h" />
     <ClInclude Include="Vector2D.h" />
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +88,7 @@
     <ClCompile Include="PieceSet.cpp" />
     <ClCompile Include="Selection.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="tools.cpp" />
     <ClCompile Include="Vector2D.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

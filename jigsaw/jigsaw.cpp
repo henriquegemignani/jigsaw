@@ -1,19 +1,21 @@
 // Code wrote by Henrique Gemignani Passos Lima
 
+#include <ctime>
+#include <cmath>
+#include <iostream>
+#include <algorithm>
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_opengl.h"
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
+#include "tools.h"
 #include "Timer.h"
 #include "Piece.h"
 #include "PieceSet.h"
 #include "Drag.h"
-#include <iostream>
-#include <algorithm>
-#include <ctime>
-#include <cmath>
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 
 //Screen attributes
 #define SCREEN_WIDTH 1000
@@ -32,7 +34,6 @@ GLuint loadTex ( char *filename, int *image_width, int *image_height ) {
     int w, h, i, j, bpp;
     Uint8 *srcPixel, *dstPixel, *raw;
     Uint32 truePixel;
-    GLenum errorCode;
 
     sdlimage = IMG_Load(filename);
 
@@ -96,7 +97,7 @@ GLuint loadTex ( char *filename, int *image_width, int *image_height ) {
     SDL_UnlockSurface( sdlimage );
     SDL_FreeSurface( sdlimage );
 
-    while ( glGetError() ) { ; }
+    CHECK_GL_ERROR();
 
     glGenTextures( 1, &retval );
     glBindTexture( GL_TEXTURE_2D, retval );
@@ -105,25 +106,16 @@ GLuint loadTex ( char *filename, int *image_width, int *image_height ) {
 
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
-    errorCode = glGetError();
-    if ( errorCode != 0 ) {
-        if ( errorCode == GL_OUT_OF_MEMORY ) {
-            printf("Out of texture memory!\n");
-        }
+    if(CHECK_GL_ERROR()) {
         free(raw);
         return 0;
     }
+
     gluBuild2DMipmaps( GL_TEXTURE_2D, 4, w, h, GL_RGBA, GL_UNSIGNED_BYTE, raw);
 
-    errorCode = glGetError();
-    if ( errorCode != 0 ) {
-        if ( errorCode == GL_OUT_OF_MEMORY ) {
-            printf("Out of texture memory!\n");
-        }
-        free(raw);
-        return 0;
-    }
     free(raw);
+
+    if(CHECK_GL_ERROR()) return 0;
     return retval;
 }
 
