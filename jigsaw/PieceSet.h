@@ -10,7 +10,7 @@ public:
     PieceSet(const Layout&);
 	~PieceSet(void);
 
-	void Scramble();
+	void Scramble(int seed);
 	void Swap(int sx, int sy, int tx, int ty);
 
 	int width() const { return width_; }

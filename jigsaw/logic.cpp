@@ -4,21 +4,25 @@
 
 #include <algorithm>
 #include <iostream>
+#include <random>
 
 #include "Piece.h"
 
-/*void minmax(double *a, double *b) {
-    double aux = *a;
-    *a = std::min(*a, *b);
-    *b = std::max(aux, *b);
-}*/
-
 Logic::Logic(const Layout& layout)
-    :   layout_(layout), pieces_(layout) {}
+    :   layout_(layout), pieces_(layout), selecting_origin_(nullptr) {}
+
+Logic::~Logic() {
+    delete selecting_origin_;
+}
 
 void Logic::Start() {
-    pieces_.Scramble();
-    std::cout << "Starting the game." << std::endl;
+    std::random_device rd;
+    Start(rd());
+}
+
+void Logic::Start(unsigned int seed) {
+    pieces_.Scramble(seed);
+    moves_ = 0;
 }
 
 void Logic::HandleEvent(const SDL_Event& event) {
@@ -31,7 +35,7 @@ void Logic::HandleEvent(const SDL_Event& event) {
             leftDown();
 
         } else if(event.button.button == SDL_BUTTON_RIGHT) {
-            //rightDown();
+            rightDown();
         }
 
     } else if( event.type == SDL_MOUSEBUTTONUP ) {
@@ -40,7 +44,7 @@ void Logic::HandleEvent(const SDL_Event& event) {
             leftUp();
 
         } else if(event.button.button == SDL_BUTTON_RIGHT) {
-            //rightUp();
+            rightUp();
         }
     }
     else if( event.type == SDL_MOUSEMOTION ) {
@@ -50,38 +54,38 @@ void Logic::HandleEvent(const SDL_Event& event) {
 }
 
 void Logic::leftDown() {
+    // Can only drag pieces if you're not trying to select pieces.
+    if(selecting_origin_) return;
 
     // If simple left click, add pointed piece to pending selection.
     if(!selection_.active())
         selection_.AddPiece(int(cursor_.position.x), int(cursor_.position.y));
 
-    // Make the 
+    // Lets drag all the selected pieces.
     dragged_ = selection_;
 
+    // And these pieces aren't selected anymore.
     selection_.Clear();
 
+    // And store the mouse distance from the topleft of the dragged pieces.
     cursor_.offset = cursor_.position - Vector2D(dragged_.start_x(), dragged_.start_y());
 }
 
-void Logic::rightDown() {/*
-    rightdrag = true;
+void Logic::rightDown() {
+    // Can only start a selection if not dragging anything.
+    if(dragged_.active()) return;
 
-    if(rect_up) {
-        int startx = (int)(drag_offset_x);
-        int starty = (int)(drag_offset_y);
-        for(int i = 0; i < rectsizex; i++)
-            for(int j = 0; j < rectsizey; j++)
-                pieces_.get_current(startx + i, starty + j)->set_color(Color(1.0, 1.0, 1.0));
-    }
+    // Clear a previous selection.
+    selection_.Clear();
 
-    rect_up = false;
-
-    // Store the rect origin.
-    drag_offset_x = (double)(layout_.width()) * event.motion.x / screenwidth;
-    drag_offset_y = (double)(layout_.height()) * event.motion.y / screenheight;*/
+    // This is both a flag for "choosing a selection" and "where the selection started".
+    selecting_origin_ = new Vector2D(cursor_.position);
 }
 
 void Logic::leftUp() {
+    // Can only move if there's pieces to move. Actually, this should work fine with an empty set, but let's just be safe.
+    if(!dragged_.active()) return;
+
     int final_x = int(cursor_.position.x) - int(cursor_.offset.x), final_y = int(cursor_.position.y) - int(cursor_.offset.y);
 
     if(final_x < 0 || final_x + dragged_.width() >= layout_.num_x() ||
@@ -97,36 +101,25 @@ void Logic::leftUp() {
     }
 
     dragged_.Clear();
-    //moves++;
+
+    moves_++;
 }
 
-void Logic::rightUp() {/*
-    // Store the rect end
-    drag_end_x = (double)(layout_.width()) * event.motion.x / screenwidth;
-    drag_end_y = (double)(layout_.height()) * event.motion.y / screenheight;
+void Logic::rightUp() {
+    // We need to have started a selection.
+    if(!selecting_origin_) return;
 
-    // It's handy to have the end be to the bottom-right of the origin.
-    minmax(&drag_offset_x, &drag_end_x);
-    minmax(&drag_offset_y, &drag_end_y);
+    // The selection started here.
+    Vector2D start = *selecting_origin_;
 
-    // Store the rect size
-    rectsizex = (int)(drag_end_x) - (int)(drag_offset_x) + 1;
-    rectsizey = (int)(drag_end_y) - (int)(drag_offset_y) + 1;
+    // And clear the flag.
+    delete selecting_origin_;
+    selecting_origin_ = nullptr;
 
-    drag_offset_x = floor(drag_offset_x);
-    drag_offset_y = floor(drag_offset_y);
-    drag_end_x = floor(drag_end_x);
-    drag_end_y = floor(drag_end_y);
+    // And ended here.
+    Vector2D end = cursor_.position;
 
-    rect_up = true;
-    rightdrag = false;
-
-    {
-        int startx = (int)(drag_offset_x);
-        int starty = (int)(drag_offset_y);
-        // Mouse pointer does not necessarily hold the origin, so fix it
-        for(int i = 0; i < rectsizex; i++)
-            for(int j = 0; j < rectsizey; j++)
-                pieces_.get_current(startx + i, starty + j)->set_color(Color(0.5, 0.5, 1.0));
-    }*/
+    // AddPiece doesn't care which corner you give it first.
+    selection_.AddPiece(int(start.x), int(start.y));
+    selection_.AddPiece(int(end.x), int(end.y));
 }

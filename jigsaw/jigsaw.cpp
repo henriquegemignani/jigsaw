@@ -1,6 +1,5 @@
 // Code wrote by Henrique Gemignani Passos Lima
 
-#include <ctime>
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -243,20 +242,12 @@ int main(int argc, char *argv[]) {
 	}
     screenwidth = (int)(screenwidth * scale);
     screenheight = (int)(screenheight * scale);
-    srand((unsigned int) time(NULL));
 
     changeResolution(screenwidth, screenheight);
 
     //The frame rate regulator
     Timer fps, timer;
 
-    int moves = 0;
-
-    double drag_offset_x, drag_offset_y;
-    double drag_end_x, drag_end_y;
-	drag_offset_x = drag_offset_y = drag_end_x = drag_end_y = -1;
-    int rectsizex = -1, rectsizey = -1;
-    bool leftdrag = false, rightdrag = false, rect_up = false;
     //Wait for user exit
 
     timer.start();
@@ -280,49 +271,36 @@ int main(int argc, char *argv[]) {
         }
 
         // Draw the simple pieces
-        for(int i = 0; i < nx; i++) {
-            for(int j = 0; j < ny; j++) {
+        for(int i = 0; i < layout.num_x(); i++) {
+            for(int j = 0; j < layout.num_y(); j++) {
                 const bool in_dragg = logic.dragged().IsSelected(i, j);
                 if(in_dragg) continue;
+
+                Piece* p = logic.pieces().get_current(i,j);
                 if(logic.selection().IsSelected(i, j))
-                    glColor3f(0.50, 0.50, 1.0);
-                else
+                    glColor3f(0.75, 0.75, 1.0);
+                else {
                     glColor3f(1.0, 1.0, 1.0);
-                logic.pieces().get_current(i,j)->Render();
+                }
+                p->Render();
             }
         }
+
+        glColor3f(1.0, 1.0, 1.0);
 
         // Draw the pieces we are dragging
         for(auto it : logic.dragged()) {
             logic.pieces().get_current(it)->CustomRender(logic.cursor(), logic.dragged().top_left());
         }
 
-        /*
-        // Dragging one piece, render it on mouse. Also, keep the position of the mouse relative to the piece constant.
-        if(leftdrag && !rect_up && selected_x != -1 && selected_y != -1)
-            pieces->get_current(selected_x,selected_y)->CustomRender(logic.cursor());
-
-        if(leftdrag && rect_up && selected_x != -1 && selected_y != -1) {
-            int startx = (int)(drag_offset_x);
-            int starty = (int)(drag_offset_y);
-
-            // Mouse pointer does not necessarily hold the origin, so fix it
-            double custom_offx = position_x + offset_x + (startx - selected_x) / (double)(nx);
-            for(int i = 0; i < rectsizex; i++) {
-                double custom_offy = position_y + offset_y + (starty - selected_y) / (double)(ny);
-                for(int j = 0; j < rectsizey; j++) {
-					pieces->get_current(startx + i, starty + j)->CustomRender(custom_offx, custom_offy);
-                    custom_offy += 1.0 / ny;
-                }
-                custom_offx += 1.0 / nx;
-            }
-        }
-        if(rightdrag) {
+        if(logic.selecting_origin()) {
             glEnable(GL_BLEND);
-            glRectd( drag_offset_x / nx, drag_offset_y / ny, position_x, position_y );
+            glColor4d(1.0, 1.0, 1.0, 1.0);
+            Vector2D scale = Vector2D(1.0 / layout.num_x(), 1.0 / layout.num_y());
+            Vector2D start = logic.selecting_origin()->Scale(scale), end = logic.cursor().position.Scale(scale);
+            glRectd(start.x, start.y, end.x, end.y);
             glDisable(GL_BLEND);
         }
-        */
 
         //Update screen
         SDL_GL_SwapBuffers();
@@ -337,12 +315,12 @@ int main(int argc, char *argv[]) {
     FILE *out = fopen("out.txt", "a");
 	fprintf(out, "Puzzle \"%s\" - %d x %d: ", argv[1], nx, ny);
     if((logic.pieces().get_matches()) == total) {
-		fprintf(out, "Success with %d moves in ", moves);
+		fprintf(out, "Success with %d moves in ", logic.moves());
 		printTime(out, timer.get_ticks());
 	} else {
 		fprintf(out, "Quit after ");
 		printTime(out, timer.get_ticks());
-		fprintf(out, " with %d moves", moves);
+		fprintf(out, " with %d moves", logic.moves());
 	}
     fprintf(out, ".\n");
     fclose(out);

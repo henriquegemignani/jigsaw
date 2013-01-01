@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <random>
 
 #include "Piece.h"
 #include "Layout.h"
@@ -30,8 +31,6 @@ PieceSet::~PieceSet(void) {
 }
 
 void PieceSet::Swap(int sx, int sy, int tx, int ty) {
-    std::cout << "Swapping (" << sx << ", " << sy << ") with (" << tx << ", " << ty << ")" << std::endl;
-
 	int change = (int)(pieces[sx][sy]->Matches(sx, sy))
             + (int)(pieces[tx][ty]->Matches(tx, ty));
     
@@ -46,15 +45,12 @@ void PieceSet::Swap(int sx, int sy, int tx, int ty) {
 	matches -= change;
 }
 
-void PieceSet::Scramble() {
+void PieceSet::Scramble(int seed) {
+    std::default_random_engine e(seed);
 	for(int i = 0; i < width_; i++)
         for(int j = 0; j < height_; j++) {
-            int x = rand() % width_, y = rand() % height_;
+            int x = e() % width_, y = e() % height_;
             if(i != x || j != y)
                 Swap(i, j, x, y);
 		}
-	/*matches = 0;
-	for(int i = 0; i < width_; i++)
-        for(int j = 0; j < height_; j++)
-            matches += (int)(pieces[i][j]->Matches(i, j)); */
 }
