@@ -149,6 +149,12 @@ bool init() {
 	RESOLUTION_WIDTH = videoinfo->current_w;
 	RESOLUTION_HEIGHT = videoinfo->current_h;
 
+    //Set caption
+    char title[260 + sizeof("Jigsaw: ")];
+    strcpy(title, "Jigsaw: ");
+    strcpy(title + sizeof("Jigsaw: ") - 1, FileName);
+    SDL_WM_SetCaption( title, NULL );
+
     //Initialize OpenGL
     changeResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -161,12 +167,7 @@ bool init() {
     //If there was any errors
     if( glGetError() != GL_NO_ERROR )
         return false;
-    //Set caption
 
-    char title[260 + sizeof("Jigsaw: ")];
-    strcpy(title, "Jigsaw: ");
-    strcpy(title + sizeof("Jigsaw: ") - 1, FileName);
-    SDL_WM_SetCaption( title, NULL );
 
     return true;
 }
@@ -174,12 +175,6 @@ bool init() {
 void clean_up() {
     //Quit SDL
     SDL_Quit();
-}
-
-void minmax(double *a, double *b) {
-    double aux = *a;
-    *a = std::min(*a, *b);
-    *b = std::max(aux, *b);
 }
 
 void printTime(FILE *out, int time) {
@@ -256,7 +251,6 @@ int main(int argc, char *argv[]) {
     nx = (int)(nx * xmul);
     ny = (int)(ny * ymul);
 
-    int total = nx*ny;
 
 	double scale = 1.0;
     if(argc >= 4) {
@@ -271,6 +265,10 @@ int main(int argc, char *argv[]) {
     screenheight = (int)(screenheight * scale);
 
     changeResolution(screenwidth, screenheight);
+    
+    nx = (int)(nx * scale);
+    ny = (int)(ny * scale);
+    int total = nx*ny;
 
     //The frame rate regulator
     Timer fps, timer;
