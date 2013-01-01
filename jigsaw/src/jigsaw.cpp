@@ -3,6 +3,8 @@
 #include <cmath>
 #include <iostream>
 #include <algorithm>
+#include "GL/glew.h"
+#define NO_SDL_GLEXT
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_opengl.h"
@@ -171,6 +173,27 @@ bool init() {
     return true;
 }
 
+bool InitOpenGLExtensions(void) {
+    static bool extensions_init = false;
+    if (extensions_init) return true;
+    extensions_init = true;
+
+    GLenum err = glewInit();
+
+    if (GLEW_OK != err) {
+        std::cout << "Error:" << glewGetErrorString(err) << std::endl;
+        extensions_init = false;
+        return false;
+    }
+
+    std::cout << "OpenGL Vendor: " << (char*) glGetString(GL_VENDOR) << std::endl;
+    std::cout << "OpenGL Renderer: " << (char*) glGetString(GL_RENDERER) << std::endl;
+    std::cout << "OpenGL Version: " << (char*) glGetString(GL_VERSION) << std::endl;
+    std::cout << "OpenGL Extensions:\n" << (char*) glGetString(GL_EXTENSIONS) << std::endl << std::endl;
+
+    return true;
+}
+
 void clean_up() {
     //Quit SDL
     SDL_Quit();
@@ -225,6 +248,7 @@ int main(int argc, char *argv[]) {
     //Initialize
     if( init() == false )
         return 1;
+    InitOpenGLExtensions();
 
     int image_width, image_height;
     GLuint thetexture = loadTex(FileName, &image_width, &image_height);

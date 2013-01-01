@@ -68,5 +68,8 @@
     <ClCompile Include="src\Logic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="glew\source\glew.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
