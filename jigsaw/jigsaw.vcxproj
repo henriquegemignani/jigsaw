@@ -48,6 +48,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -77,7 +78,6 @@
   <ItemGroup>
     <ClInclude Include="Color.h" />
     <ClInclude Include="Cursor.h" />
-    <ClInclude Include="Drag.h" />
     <ClInclude Include="Layout.h" />
     <ClInclude Include="logic.h" />
     <ClInclude Include="Piece.h" />
@@ -88,7 +88,6 @@
     <ClInclude Include="Vector2D.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Drag.cpp" />
     <ClCompile Include="jigsaw.cpp" />
     <ClCompile Include="logic.cpp" />
     <ClCompile Include="Piece.cpp" />

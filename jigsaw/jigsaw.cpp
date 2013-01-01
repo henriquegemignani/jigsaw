@@ -16,7 +16,6 @@
 #include "Timer.h"
 #include "Piece.h"
 #include "PieceSet.h"
-#include "Drag.h"
 
 //Screen attributes
 #define SCREEN_WIDTH 1000
@@ -337,8 +336,9 @@ int main(int argc, char *argv[]) {
         if( fps.get_ticks() < 1000 / FRAMES_PER_SECOND )
             SDL_Delay( ( 1000 / FRAMES_PER_SECOND ) - fps.get_ticks() );
     }
+
     FILE *out = fopen("out.txt", "a");
-	fprintf(out, "Puzzle \"%s\" - %d x %d: ", FileName, nx, ny);
+    fprintf(out, "Puzzle \"%s\" - %d x %d: ", FileName, layout.num_x(), layout.num_y());
     if((logic.pieces().get_matches()) == total) {
 		fprintf(out, "Success with %d moves in ", logic.moves());
 		printTime(out, timer.get_ticks());
