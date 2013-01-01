@@ -283,7 +283,7 @@ int main(int argc, char *argv[]) {
         for(int i = 0; i < nx; i++) {
             for(int j = 0; j < ny; j++) {
                 Piece* p = logic.pieces().get_current(i,j);
-                const bool in_selection = logic.selection().pieces.find(p) != logic.selection().pieces.end();
+                const bool in_selection = logic.selection().IsSelected(i, j);
                 if(in_selection) continue;
                 // Determine color (check if piece is in dragged rect?)
                 //glColor3f(0.50, 0.50, 1.0);
@@ -293,8 +293,8 @@ int main(int argc, char *argv[]) {
         }
 
         // Draw the pieces we are dragging
-        for(auto it : logic.selection().pieces) {
-            it->CustomRender(logic.cursor(), logic.selection().topleft);
+        for(auto it : logic.selection()) {
+            logic.pieces().get_current(it)->CustomRender(logic.cursor(), logic.selection().top_left());
         }
 
         /*

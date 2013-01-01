@@ -49,14 +49,10 @@ void Logic::HandleEvent(const SDL_Event& event) {
 void Logic::leftDown(const SDL_MouseButtonEvent& button) {
     cursor_.position = layout_.ScreenToGame(button.x, button.y);
 
-    selection_.origin = Vector2D(floor(cursor_.position.x), floor(cursor_.position.y));
-    selection_.topleft = selection_.origin;
-    selection_.pieces.insert(pieces_.get_current(int(cursor_.position.x), int(cursor_.position.y)));
-    selection_.pieces.insert(pieces_.get_current(int(cursor_.position.x) + 1, int(cursor_.position.y)));
-    selection_.pieces.insert(pieces_.get_current(int(cursor_.position.x), int(cursor_.position.y) + 1));
-    selection_.pieces.insert(pieces_.get_current(int(cursor_.position.x) + 1, int(cursor_.position.y) + 1));
+    selection_.AddPiece(int(cursor_.position.x), int(cursor_.position.y));
+    selection_.AddPiece(int(cursor_.position.x)+1, int(cursor_.position.y)+1);
 
-    cursor_.offset = cursor_.position - selection_.origin;
+    cursor_.offset = cursor_.position - Vector2D(floor(cursor_.position.x), floor(cursor_.position.y));
 
     /* if(rect_up) {
         int startx = (int)(drag_offset_x);
@@ -97,11 +93,11 @@ void Logic::rightDown(const SDL_MouseButtonEvent& button) {/*
 void Logic::leftUp(const SDL_MouseButtonEvent& button) {
 
     Piece* piece = NULL;
-    for(auto it : selection_.pieces) {
-        piece = it;
+    for(auto it : selection_) {
+        piece = pieces_.get_current(it);
         break;
     }
-    selection_.pieces.clear();
+    selection_.Clear();
 
     /*
     int finalx = layout_.width() * event.motion.x / screenwidth;
