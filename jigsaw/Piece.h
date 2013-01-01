@@ -2,14 +2,18 @@
 #define PIECE_H_
 
 #include "Vector2D.h"
+#include "Cursor.h"
 #include "Color.h"
 
 class Piece {
 public:
     Piece(int x, int y, int nx, int ny);
     virtual ~Piece();
+
     void Render();
-    void CustomRender(double x, double y);
+    void CustomRender(const Cursor&) const;
+    void CustomRender(double x, double y) const;
+
     void Move(int x, int y);
     bool Matches(int x, int y);
 
@@ -24,7 +28,7 @@ private:
 	bool position_queued;
 	Color color;
 	double alpha;
-    void InternalRender();
+    void internalRender() const;
 };
 
 #endif /* PIECE_H_ */

@@ -24,12 +24,17 @@ Piece::~Piece() {
     // TODO Auto-generated destructor stub
 }
 
-void Piece::CustomRender(double x, double y) {
+void Piece::CustomRender(const Cursor& cursor) const {
+    Vector2D total = cursor.position + cursor.offset;
+    CustomRender(total.x, total.y);
+}
+
+void Piece::CustomRender(double x, double y) const {
     glPushMatrix();
     glLoadIdentity();
-    glTranslated( x, y, 0 );
+    glTranslated(x, y, 0.0);
     //Start quad
-    InternalRender();
+    internalRender();
     //Reset
     glPopMatrix();
 }
@@ -44,12 +49,12 @@ void Piece::Render() {
 		position_queued = false;
 	}
     //Start quad
-    InternalRender();
+    internalRender();
     //Reset
     glPopMatrix();
 }
 
-void Piece::InternalRender() {
+void Piece::internalRender() const {
     //Start quad
     glBegin( GL_QUADS );
         //Set color to white
