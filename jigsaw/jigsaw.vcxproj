@@ -94,6 +94,7 @@
     <ClCompile Include="src\Logic.cpp" />
     <ClCompile Include="src\Piece.cpp" />
     <ClCompile Include="src\PieceSet.cpp" />
+    <ClCompile Include="src\shaders.cpp" />
     <ClCompile Include="src\Timer.cpp" />
     <ClCompile Include="src\tools.cpp" />
     <ClCompile Include="src\vector2D.cpp" />

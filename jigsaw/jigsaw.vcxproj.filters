@@ -71,5 +71,8 @@
     <ClCompile Include="glew\source\glew.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\shaders.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

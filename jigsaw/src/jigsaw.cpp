@@ -30,6 +30,8 @@ int RESOLUTION_WIDTH = -1, RESOLUTION_HEIGHT = -1;
 // The frame rate
 #define FRAMES_PER_SECOND 60
 
+void shaders_init();
+
 GLuint loadTex ( char *filename, int *image_width, int *image_height ) {
     GLuint retval;
     SDL_Surface *sdlimage;
@@ -173,6 +175,8 @@ bool init() {
     return true;
 }
 
+static bool useGLSL = false;
+
 bool InitOpenGLExtensions(void) {
     static bool extensions_init = false;
     if (extensions_init) return true;
@@ -186,10 +190,31 @@ bool InitOpenGLExtensions(void) {
         return false;
     }
 
+    useGLSL = true;
+
     std::cout << "OpenGL Vendor: " << (char*) glGetString(GL_VENDOR) << std::endl;
     std::cout << "OpenGL Renderer: " << (char*) glGetString(GL_RENDERER) << std::endl;
     std::cout << "OpenGL Version: " << (char*) glGetString(GL_VERSION) << std::endl;
-    std::cout << "OpenGL Extensions:\n" << (char*) glGetString(GL_EXTENSIONS) << std::endl << std::endl;
+
+    if (GL_TRUE != glewGetExtension("GL_ARB_fragment_shader")) {
+        std::cout << "[WARNING] GL_ARB_fragment_shader extension is not available!" << std::endl;
+        useGLSL = false;
+    }
+
+    if (GL_TRUE != glewGetExtension("GL_ARB_vertex_shader")) {
+        std::cout << "[WARNING] GL_ARB_vertex_shader extension is not available!" << std::endl;
+        useGLSL = false;
+    }
+
+    if (GL_TRUE != glewGetExtension("GL_ARB_shader_objects")) {
+        std::cout << "[WARNING] GL_ARB_shader_objects extension is not available!" << std::endl;
+        useGLSL = false;
+    }
+
+    if (useGLSL)
+        std::cout << "[OK] OpenGL Shading Language is available!" << std::endl << std::endl;
+    else
+        std::cout << "[FAILED] OpenGL Shading Language is not available..." << std::endl << std::endl;
 
     return true;
 }
@@ -214,6 +239,9 @@ void printTime(FILE *out, int time) {
 
 #ifdef _WIN32
 static bool OpenFileDialog() {
+    char cur_dir[MAX_PATH + 1];
+    GetCurrentDirectory(MAX_PATH, cur_dir);
+
     OPENFILENAME  ofn;        
     memset(&ofn,0,sizeof(ofn));
     ofn.lStructSize     = sizeof(ofn);
@@ -223,10 +251,10 @@ static bool OpenFileDialog() {
     ofn.lpstrFile       = FileName;
     ofn.nMaxFile        = MAX_PATH;
     ofn.lpstrTitle      = "Please Select A File To Open";
-    ofn.Flags           = OFN_NONETWORKBUTTON |
-                          OFN_FILEMUSTEXIST |
-                          OFN_HIDEREADONLY;
-    return GetOpenFileName(&ofn) != 0;
+    ofn.Flags           = OFN_NONETWORKBUTTON | OFN_FILEMUSTEXIST;
+    bool ret = GetOpenFileName(&ofn) != 0;
+    SetCurrentDirectory(cur_dir);
+    return ret;
 }
 #endif
 
@@ -249,6 +277,7 @@ int main(int argc, char *argv[]) {
     if( init() == false )
         return 1;
     InitOpenGLExtensions();
+    shaders_init();
 
     int image_width, image_height;
     GLuint thetexture = loadTex(FileName, &image_width, &image_height);
