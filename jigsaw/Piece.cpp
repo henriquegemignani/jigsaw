@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstdio>
 
-Piece::Piece(int x, int y, int nx, int ny) : color_(1,1,1), alpha_(1.0) {
+Piece::Piece(int x, int y, int nx, int ny) {
 	size_ = Vector2D(1.0 / nx, 1.0 / ny);
 	position_ = Vector2D(x, y);
 	tex_origin_ = Vector2D((x)/(double)(nx), (y)/(double)(ny));
@@ -48,9 +48,6 @@ void Piece::Render() {
 void Piece::internalRender() const {
     //Start quad
     glBegin( GL_QUADS );
-        //Set color to white
-        glColor4d( color_.r, color_.g, color_.b, alpha_ );
-
         //Draw square
         glTexCoord2d(tex_origin_.x, tex_origin_.y);
         glVertex2d(0, 0);

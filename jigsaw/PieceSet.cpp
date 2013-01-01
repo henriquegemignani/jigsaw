@@ -1,5 +1,6 @@
 #include "PieceSet.h"
 
+#include <iostream>
 #include <cstdlib>
 
 #include "Piece.h"
@@ -29,6 +30,8 @@ PieceSet::~PieceSet(void) {
 }
 
 void PieceSet::Swap(int sx, int sy, int tx, int ty) {
+    std::cout << "Swapping (" << sx << ", " << sy << ") with (" << tx << ", " << ty << ")" << std::endl;
+
 	int change = (int)(pieces[sx][sy]->Matches(sx, sy))
             + (int)(pieces[tx][ty]->Matches(tx, ty));
     

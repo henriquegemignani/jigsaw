@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <utility>
 #include <limits>
+#include <list>
 #include "Piece.h"
 #include "Vector2D.h"
 
@@ -57,18 +58,46 @@ class Selection {
     bool IsSelected(int x, int y) const { 
         return start_x_ <= x && x <= end_x_ && start_y_ <= y && y <= end_y_;
     }
-
     bool IsSelected(const std::pair<int, int>& p) const { return IsSelected(p.first, p.second); }
+
     Vector2D top_left() const {
         return Vector2D(start_x_, start_y_);
     }
 
     bool active() const { return end_x_ >= start_x_ && end_y_ >= start_y_; }
+    int width() const { return std::max(end_x_ - start_x_, 0); }
+    int height() const { return std::max(end_y_ - start_y_, 0); }
+    int start_x() const { return start_x_; }
+    int start_y() const { return start_y_; }
+
+
     const_iterator begin() const { 
         return active() ? const_iterator(this, start_x_, start_y_) : end();
     }
     const_iterator end() const { 
         return const_iterator(this, start_x_, end_y_ + 1);
+    }
+
+    std::list<int> x_range(bool increasing) {
+        std::list<int> result;
+        if(increasing)
+            for(int i = start_x_; i <= end_x_; ++i)
+                result.push_back(i);
+        else
+            for(int i = end_x_; i >= start_x_; --i)
+                result.push_back(i);
+        return result;
+    }
+
+    std::list<int> y_range(bool increasing) {
+        std::list<int> result;
+        if(increasing)
+            for(int i = start_y_; i <= end_y_; ++i)
+                result.push_back(i);
+        else
+            for(int i = end_y_; i >= start_y_; --i)
+                result.push_back(i);
+        return result;
     }
 
   private:

@@ -14,21 +14,23 @@ class Logic {
 
     const PieceSet& pieces() const { return pieces_; }
     const Cursor& cursor() const { return cursor_; }
+    const Selection& dragged() const { return dragged_; }
     const Selection& selection() const { return selection_; }
 
     void Start();
     void HandleEvent(const SDL_Event& event);
 
   private:
-    void leftDown(const SDL_MouseButtonEvent& button);
-    void rightDown(const SDL_MouseButtonEvent& button);
-    void leftUp(const SDL_MouseButtonEvent& button);
-    void rightUp(const SDL_MouseButtonEvent& button);
+    void leftDown();
+    void rightDown();
+    void leftUp();
+    void rightUp();
 
 
     Layout layout_;
     PieceSet pieces_;
     Cursor cursor_;
+    Selection dragged_;
     Selection selection_;
 };
 

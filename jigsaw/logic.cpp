@@ -2,8 +2,8 @@
 
 #include "logic.h"
 
-#include <set>
 #include <algorithm>
+#include <iostream>
 
 #include "Piece.h"
 
@@ -18,6 +18,7 @@ Logic::Logic(const Layout& layout)
 
 void Logic::Start() {
     pieces_.Scramble();
+    std::cout << "Starting the game." << std::endl;
 }
 
 void Logic::HandleEvent(const SDL_Event& event) {
@@ -25,19 +26,21 @@ void Logic::HandleEvent(const SDL_Event& event) {
         // do nothing
     }
     else if( event.type == SDL_MOUSEBUTTONDOWN ) {
+        cursor_.position = layout_.ScreenToGame(event.button.x, event.button.y);
         if(event.button.button == SDL_BUTTON_LEFT/* && !rightdrag*/) {
-            leftDown(event.button);
+            leftDown();
 
         } else if(event.button.button == SDL_BUTTON_RIGHT) {
-            //rightDown(event.button);
+            //rightDown();
         }
 
     } else if( event.type == SDL_MOUSEBUTTONUP ) {
+        cursor_.position = layout_.ScreenToGame(event.button.x, event.button.y);
         if(event.button.button == SDL_BUTTON_LEFT/* && rect_up*/) {
-            leftUp(event.button);
+            leftUp();
 
         } else if(event.button.button == SDL_BUTTON_RIGHT) {
-            //rightUp(event.button);
+            //rightUp();
         }
     }
     else if( event.type == SDL_MOUSEMOTION ) {
@@ -46,33 +49,21 @@ void Logic::HandleEvent(const SDL_Event& event) {
     }
 }
 
-void Logic::leftDown(const SDL_MouseButtonEvent& button) {
-    cursor_.position = layout_.ScreenToGame(button.x, button.y);
+void Logic::leftDown() {
 
-    selection_.AddPiece(int(cursor_.position.x), int(cursor_.position.y));
-    selection_.AddPiece(int(cursor_.position.x)+1, int(cursor_.position.y)+1);
+    // If simple left click, add pointed piece to pending selection.
+    if(!selection_.active())
+        selection_.AddPiece(int(cursor_.position.x), int(cursor_.position.y));
 
-    cursor_.offset = cursor_.position - Vector2D(floor(cursor_.position.x), floor(cursor_.position.y));
+    // Make the 
+    dragged_ = selection_;
 
-    /* if(rect_up) {
-        int startx = (int)(drag_offset_x);
-        int starty = (int)(drag_offset_y);
-        for(int i = 0; i < rectsizex; i++)
-            for(int j = 0; j < rectsizey; j++)
-                pieces_.get_current(startx + i, starty + j)->set_color(Color(1.0, 1.0, 1.0));
-    }
-    rect_up = !(cursor_.offset.x < drag_offset_x || drag_end_x + 1 < cursor_.offset.x ||
-        cursor_.offset.y < drag_offset_y || drag_end_y + 1 < cursor_.offset.y);
-    if(!rect_up) {
-        Vector2D temp = layout_.ScreenToGame(button.x, button.y);
-        drag_end_x = drag_offset_x = temp.x;
-        drag_end_y = drag_offset_y = temp.y;
-        rectsizex = rectsizey = 1;
-        rect_up = true;
-    }*/
+    selection_.Clear();
+
+    cursor_.offset = cursor_.position - Vector2D(dragged_.start_x(), dragged_.start_y());
 }
 
-void Logic::rightDown(const SDL_MouseButtonEvent& button) {/*
+void Logic::rightDown() {/*
     rightdrag = true;
 
     if(rect_up) {
@@ -90,57 +81,26 @@ void Logic::rightDown(const SDL_MouseButtonEvent& button) {/*
     drag_offset_y = (double)(layout_.height()) * event.motion.y / screenheight;*/
 }
 
-void Logic::leftUp(const SDL_MouseButtonEvent& button) {
+void Logic::leftUp() {
+    int final_x = int(cursor_.position.x) - int(cursor_.offset.x), final_y = int(cursor_.position.y) - int(cursor_.offset.y);
 
-    Piece* piece = NULL;
-    for(auto it : selection_) {
-        piece = pieces_.get_current(it);
-        break;
+    if(final_x < 0 || final_x + dragged_.width() >= layout_.num_x() ||
+       final_y < 0 || final_y + dragged_.height() >= layout_.num_y()) {
+           dragged_.Clear();
+           return;
     }
-    selection_.Clear();
 
-    /*
-    int finalx = layout_.width() * event.motion.x / screenwidth;
-    int finaly = layout_.height() * event.motion.y / screenheight;
-    int startx = (int)(drag_offset_x);
-    int starty = (int)(drag_offset_y);
-    finalx += (startx - selected_x);
-    finaly += (starty - selected_y);
-    if(finalx >= 0 && finaly >= 0 && finalx + rectsizex - 1 < layout_.width() && finaly + rectsizey - 1 < layout_.height()) {
-        {
-            for(int i = 0; i < rectsizex; i++)
-                for(int j = 0; j < rectsizey; j++)
-                    pieces_.get_current(startx + i, starty + j)->set_alpha(1.0);
-        }
-        if(startx >= finalx) {
-            for(int i = 0; i < rectsizex; i++) {
-                if(starty >= finaly)
-                    for(int j = 0; j < rectsizey; j++)
-                        pieces_.Swap(startx + i, starty + j, finalx + i, finaly + j);
-                else
-                    for(int j = rectsizey - 1; j >= 0; j--)
-                        pieces_.Swap(startx + i, starty + j, finalx + i, finaly + j);
-            }
-        } else {
-            for(int i = rectsizex - 1; i >= 0; i--) {
-                if(starty >= finaly)
-                    for(int j = 0; j < rectsizey; j++)
-                        pieces_.Swap(startx + i, starty + j, finalx + i, finaly + j);
-                else
-                    for(int j = rectsizey - 1; j >= 0; j--)
-                        pieces_.Swap(startx + i, starty + j, finalx + i, finaly + j);
-            }
+    for(int i : dragged_.x_range(dragged_.start_x() >= final_x)) {
+        for(int j : dragged_.y_range(dragged_.start_y() >= final_y)) {
+            pieces_.Swap(i, j, final_x + i - dragged_.start_x(), final_y + j - dragged_.start_y());
         }
     }
-    drag_offset_x = drag_offset_y = drag_end_x = drag_end_y = -1;
-    rect_up = false;
-    leftdrag = false;
-    selected_x = selected_y = -1;*/
-    
+
+    dragged_.Clear();
     //moves++;
 }
 
-void Logic::rightUp(const SDL_MouseButtonEvent& button) {/*
+void Logic::rightUp() {/*
     // Store the rect end
     drag_end_x = (double)(layout_.width()) * event.motion.x / screenwidth;
     drag_end_y = (double)(layout_.height()) * event.motion.y / screenheight;

@@ -16,17 +16,12 @@ class Piece {
     void Move(int x, int y);
     bool Matches(int x, int y);
 
-	void set_color(Color c) { color_ = c; }
-	void set_alpha(double a) { alpha_ = a; }
-
     const Vector2D& position() const { return position_; }
 
   private:
     void internalRender() const;
 
 	Vector2D position_, size_, tex_origin_;
-	Color color_;
-	double alpha_;
 };
 
 #endif /* PIECE_H_ */
