@@ -8,6 +8,7 @@
 #include "SDL/SDL_opengl.h"
 #ifdef _WIN32
 #include <Windows.h>
+#include <Commdlg.h>
 #endif
 
 #include "tools.h"
@@ -137,6 +138,7 @@ bool changeResolution(int width, int height) {
     return true;
 }
 
+char FileName[260];
 
 bool init() {
     //Initialize SDL
@@ -160,7 +162,11 @@ bool init() {
     if( glGetError() != GL_NO_ERROR )
         return false;
     //Set caption
-    SDL_WM_SetCaption( "Jigsaw", NULL );
+
+    char title[260 + sizeof("Jigsaw: ")];
+    strcpy(title, "Jigsaw: ");
+    strcpy(title + sizeof("Jigsaw: ") - 1, FileName);
+    SDL_WM_SetCaption( title, NULL );
 
     return true;
 }
@@ -189,24 +195,45 @@ void printTime(FILE *out, int time) {
     fprintf(out, "%ds", seconds);
 }
 
+#ifdef _WIN32
+static bool OpenFileDialog() {
+    OPENFILENAME  ofn;        
+    memset(&ofn,0,sizeof(ofn));
+    ofn.lStructSize     = sizeof(ofn);
+    ofn.hwndOwner       = NULL;
+    ofn.hInstance       = NULL;
+    ofn.lpstrFilter     = "Image Files (*.png,gif,jpg,jpeg,bmp,tga)\0*.png;*.gif;*.jpg;*.jpeg;*.bmp;*.tga\0\0";    
+    ofn.lpstrFile       = FileName;
+    ofn.nMaxFile        = MAX_PATH;
+    ofn.lpstrTitle      = "Please Select A File To Open";
+    ofn.Flags           = OFN_NONETWORKBUTTON |
+                          OFN_FILEMUSTEXIST |
+                          OFN_HIDEREADONLY;
+    return GetOpenFileName(&ofn) != 0;
+}
+#endif
+
 int main(int argc, char *argv[]) {
     //Quit flag
     bool quit = false;
 	if(argc == 1) {
 #ifdef _WIN32
-        MessageBox(HWND_DESKTOP, "No file given.", "Fatal Error", MB_OK | MB_ICONERROR);
+        if(!OpenFileDialog())
+            exit(1);
 #else
 		fprintf(stderr, "No file given.\n");
-#endif
 		exit(1);
-	}
+#endif
+	} else {
+        strncpy(FileName, argv[1], sizeof(FileName));
+    }
 
     //Initialize
     if( init() == false )
         return 1;
 
     int image_width, image_height;
-    GLuint thetexture = loadTex(argv[1], &image_width, &image_height);
+    GLuint thetexture = loadTex(FileName, &image_width, &image_height);
     if(thetexture == 0) {
 #ifdef _WIN32
         MessageBox(HWND_DESKTOP, "Invalid file.", "Fatal Error", MB_OK | MB_ICONERROR);
@@ -313,7 +340,7 @@ int main(int argc, char *argv[]) {
             SDL_Delay( ( 1000 / FRAMES_PER_SECOND ) - fps.get_ticks() );
     }
     FILE *out = fopen("out.txt", "a");
-	fprintf(out, "Puzzle \"%s\" - %d x %d: ", argv[1], nx, ny);
+	fprintf(out, "Puzzle \"%s\" - %d x %d: ", FileName, nx, ny);
     if((logic.pieces().get_matches()) == total) {
 		fprintf(out, "Success with %d moves in ", logic.moves());
 		printTime(out, timer.get_ticks());
