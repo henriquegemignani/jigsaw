@@ -1,6 +1,5 @@
 // Code wrote by Henrique Gemignani Passos Lima
 
-#include <ctime>
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -12,6 +11,7 @@
 #endif
 
 #include "tools.h"
+#include "logic.h"
 #include "Timer.h"
 #include "Piece.h"
 #include "PieceSet.h"
@@ -242,213 +242,66 @@ int main(int argc, char *argv[]) {
 	}
     screenwidth = (int)(screenwidth * scale);
     screenheight = (int)(screenheight * scale);
-    srand((unsigned int) time(NULL));
 
     changeResolution(screenwidth, screenheight);
-	PieceSet *pieces = new PieceSet(nx, ny);
-	pieces->Scramble();
 
     //The frame rate regulator
     Timer fps, timer;
 
-    int moves = 0;
-
-    int selected_x = -1, selected_y = -1;
-    double offset_x, offset_y;
-    double position_x, position_y;
-
-    double drag_offset_x, drag_offset_y;
-    double drag_end_x, drag_end_y;
-	drag_offset_x = drag_offset_y = drag_end_x = drag_end_y = -1;
-    int rectsizex = -1, rectsizey = -1;
-    bool leftdrag = false, rightdrag = false, rect_up = false;
     //Wait for user exit
 
     timer.start();
 
-	SDL_Event event;
+    Layout layout(nx, ny, screenwidth, screenheight);
+    Logic logic(layout);
+    logic.Start();
     while( quit == false ) {
-        //Start the frame timer
+        // Start the frame timer
         fps.start();
 
-        //While there are events to handle
+        // While there are events to handle
+        SDL_Event event;
         while( SDL_PollEvent( &event ) ) {
             //Handle key presses
-            if( event.type == SDL_KEYDOWN ) {
-                switch( event.key.keysym.sym ) {
-                    case SDLK_ESCAPE: quit = true;
-                    default: ;
-                }
-            }
-			else if( pieces->get_matches() >= total) {
-                // do nothing
-            }
-            else if( event.type == SDL_MOUSEBUTTONDOWN ) {
-                if(event.button.button == SDL_BUTTON_LEFT && !rightdrag) {
-                    offset_x = (double)(nx) * event.motion.x / screenwidth;
-                    offset_y = (double)(ny) * event.motion.y / screenheight;
-
-					if(rect_up) {
-						int startx = (int)(drag_offset_x);
-						int starty = (int)(drag_offset_y);
-						for(int i = 0; i < rectsizex; i++)
-							for(int j = 0; j < rectsizey; j++)
-								pieces->get_current(startx + i, starty + j)->set_color(Color(1.0, 1.0, 1.0));
-					}
-
-
-                    rect_up = !(offset_x < drag_offset_x || drag_end_x + 1 < offset_x ||
-						offset_y < drag_offset_y || drag_end_y + 1 < offset_y);
-                    if(!rect_up) {
-                        drag_end_x = drag_offset_x = (double)(nx) * event.motion.x / screenwidth;
-                        drag_end_y = drag_offset_y = (double)(ny) * event.motion.y / screenheight;
-                        rectsizex = rectsizey = 1;
-                        rect_up = true;
-                    }
-					leftdrag = true;
-					// Store the piece we're dragging.
-					selected_x = (int)(offset_x);
-					selected_y = (int)(offset_y);
-
-					// Store the position of the piece relative to the mouse
-					offset_x = (selected_x - offset_x) / nx;
-					offset_y = (selected_y - offset_y) / ny;
-                } else if(event.button.button == SDL_BUTTON_RIGHT) {
-                    rightdrag = true;
-
-					if(rect_up) {
-						int startx = (int)(drag_offset_x);
-						int starty = (int)(drag_offset_y);
-						for(int i = 0; i < rectsizex; i++)
-							for(int j = 0; j < rectsizey; j++)
-								pieces->get_current(startx + i, starty + j)->set_color(Color(1.0, 1.0, 1.0));
-					}
-
-                    rect_up = false;
-
-                    // Store the rect origin.
-                    drag_offset_x = (double)(nx) * event.motion.x / screenwidth;
-                    drag_offset_y = (double)(ny) * event.motion.y / screenheight;
-                }
-
-            } else if( event.type == SDL_MOUSEBUTTONUP ) {
-                if(event.button.button == SDL_BUTTON_LEFT && rect_up) {
-                    int finalx = nx * event.motion.x / screenwidth;
-                    int finaly = ny * event.motion.y / screenheight;
-                    int startx = (int)(drag_offset_x);
-                    int starty = (int)(drag_offset_y);
-                    finalx += (startx - selected_x);
-                    finaly += (starty - selected_y);
-                    if(finalx >= 0 && finaly >= 0 && finalx + rectsizex - 1 < nx && finaly + rectsizey - 1 < ny) {
-						{
-							for(int i = 0; i < rectsizex; i++)
-								for(int j = 0; j < rectsizey; j++)
-									pieces->get_current(startx + i, starty + j)->set_alpha(1.0);
-						}
-                        if(startx >= finalx) {
-                            for(int i = 0; i < rectsizex; i++) {
-                                if(starty >= finaly)
-                                    for(int j = 0; j < rectsizey; j++)
-										pieces->Swap(startx + i, starty + j, finalx + i, finaly + j);
-                                else
-                                    for(int j = rectsizey - 1; j >= 0; j--)
-                                        pieces->Swap(startx + i, starty + j, finalx + i, finaly + j);
-                            }
-                        } else {
-                            for(int i = rectsizex - 1; i >= 0; i--) {
-                                if(starty >= finaly)
-                                    for(int j = 0; j < rectsizey; j++)
-                                        pieces->Swap(startx + i, starty + j, finalx + i, finaly + j);
-                                else
-                                    for(int j = rectsizey - 1; j >= 0; j--)
-                                        pieces->Swap(startx + i, starty + j, finalx + i, finaly + j);
-                            }
-                        }
-                    }
-                    selected_x = selected_y = -1;
-                    moves++;
-                    rect_up = false;
-                    leftdrag = false;
-                    drag_offset_x = drag_offset_y = drag_end_x = drag_end_y = -1;
-
-                } else if(event.button.button == SDL_BUTTON_RIGHT) {
-                    // Store the rect end
-                    drag_end_x = (double)(nx) * event.motion.x / screenwidth;
-                    drag_end_y = (double)(ny) * event.motion.y / screenheight;
-
-                    // It's handy to have the end be to the bottom-right of the origin.
-                    minmax(&drag_offset_x, &drag_end_x);
-                    minmax(&drag_offset_y, &drag_end_y);
-
-                    // Store the rect size
-                    rectsizex = (int)(drag_end_x) - (int)(drag_offset_x) + 1;
-                    rectsizey = (int)(drag_end_y) - (int)(drag_offset_y) + 1;
-
-                    drag_offset_x = floor(drag_offset_x);
-                    drag_offset_y = floor(drag_offset_y);
-                    drag_end_x = floor(drag_end_x);
-                    drag_end_y = floor(drag_end_y);
-
-                    rect_up = true;
-                    rightdrag = false;
-
-					{
-						int startx = (int)(drag_offset_x);
-						int starty = (int)(drag_offset_y);
-						// Mouse pointer does not necessarily hold the origin, so fix it
-						for(int i = 0; i < rectsizex; i++)
-							for(int j = 0; j < rectsizey; j++)
-								pieces->get_current(startx + i, starty + j)->set_color(Color(0.5, 0.5, 1.0));
-					}
-                }
-            }
-            else if( event.type == SDL_MOUSEMOTION ) {
-                // Keep track of the mouse position in a handy format.
-                position_x = (double)(event.motion.x) / screenwidth;
-                position_y = (double)(event.motion.y) / screenheight;
-            }
-            if( event.type == SDL_QUIT ) {
+            if( (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) || (event.type == SDL_QUIT) ) {
                 quit = true;
+            } else {
+                logic.HandleEvent(event);
             }
         }
-        for(int i = 0; i < nx; i++)
-            for(int j = 0; j < ny; j++) {
-                // Dont't render the dragged rect, if we're dragging one.
-                if((int)(drag_offset_x) <= i && i <= (int)(drag_end_x) &&
-                   (int)(drag_offset_y) <= j && j <= (int)(drag_end_y)) {
-                    if(leftdrag)
-                        continue;
-                    else if(rect_up)
-                        glColor3f(0.50, 0.50, 1.0);
-                } else
+
+        // Draw the simple pieces
+        for(int i = 0; i < layout.num_x(); i++) {
+            for(int j = 0; j < layout.num_y(); j++) {
+                const bool in_dragg = logic.dragged().IsSelected(i, j);
+                if(in_dragg) continue;
+
+                Piece* p = logic.pieces().get_current(i,j);
+                if(logic.selection().IsSelected(i, j))
+                    glColor3f(0.75, 0.75, 1.0);
+                else {
                     glColor3f(1.0, 1.0, 1.0);
-                pieces->get_current(i,j)->Render();
-            }
-
-        // Dragging one piece, render it on mouse. Also, keep the position of the mouse relative to the piece constant.
-        if(leftdrag && !rect_up && selected_x != -1 && selected_y != -1)
-            pieces->get_current(selected_x,selected_y)->CustomRender(position_x + offset_x, position_y + offset_y);
-
-        if(leftdrag && rect_up && selected_x != -1 && selected_y != -1) {
-            int startx = (int)(drag_offset_x);
-            int starty = (int)(drag_offset_y);
-
-            // Mouse pointer does not necessarily hold the origin, so fix it
-            double custom_offx = position_x + offset_x + (startx - selected_x) / (double)(nx);
-            for(int i = 0; i < rectsizex; i++) {
-                double custom_offy = position_y + offset_y + (starty - selected_y) / (double)(ny);
-                for(int j = 0; j < rectsizey; j++) {
-					pieces->get_current(startx + i, starty + j)->CustomRender(custom_offx, custom_offy);
-                    custom_offy += 1.0 / ny;
                 }
-                custom_offx += 1.0 / nx;
+                p->Render();
             }
         }
-        if(rightdrag) {
+
+        glColor3f(1.0, 1.0, 1.0);
+
+        // Draw the pieces we are dragging
+        for(auto it : logic.dragged()) {
+            logic.pieces().get_current(it)->CustomRender(logic.cursor(), logic.dragged().top_left());
+        }
+
+        if(logic.selecting_origin()) {
             glEnable(GL_BLEND);
-            glRectd( drag_offset_x / nx, drag_offset_y / ny, position_x, position_y );
+            glColor4d(1.0, 1.0, 1.0, 1.0);
+            Vector2D scale = Vector2D(1.0 / layout.num_x(), 1.0 / layout.num_y());
+            Vector2D start = logic.selecting_origin()->Scale(scale), end = logic.cursor().position.Scale(scale);
+            glRectd(start.x, start.y, end.x, end.y);
             glDisable(GL_BLEND);
         }
+
         //Update screen
         SDL_GL_SwapBuffers();
 
@@ -461,13 +314,13 @@ int main(int argc, char *argv[]) {
     }
     FILE *out = fopen("out.txt", "a");
 	fprintf(out, "Puzzle \"%s\" - %d x %d: ", argv[1], nx, ny);
-	if((pieces->get_matches()) == total) {
-		fprintf(out, "Success with %d moves in ", moves);
+    if((logic.pieces().get_matches()) == total) {
+		fprintf(out, "Success with %d moves in ", logic.moves());
 		printTime(out, timer.get_ticks());
 	} else {
 		fprintf(out, "Quit after ");
 		printTime(out, timer.get_ticks());
-		fprintf(out, " with %d moves", moves);
+		fprintf(out, " with %d moves", logic.moves());
 	}
     fprintf(out, ".\n");
     fclose(out);

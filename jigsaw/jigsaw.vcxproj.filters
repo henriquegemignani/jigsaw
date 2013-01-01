@@ -36,6 +36,18 @@
     <ClInclude Include="tools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="logic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cursor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Layout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jigsaw.cpp">
@@ -56,10 +68,10 @@
     <ClCompile Include="Vector2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Selection.cpp">
+    <ClCompile Include="tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tools.cpp">
+    <ClCompile Include="logic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
