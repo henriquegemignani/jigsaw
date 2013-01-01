@@ -49,6 +49,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\SDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -76,25 +77,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Color.h" />
-    <ClInclude Include="Cursor.h" />
-    <ClInclude Include="Layout.h" />
-    <ClInclude Include="logic.h" />
-    <ClInclude Include="Piece.h" />
-    <ClInclude Include="PieceSet.h" />
-    <ClInclude Include="Selection.h" />
-    <ClInclude Include="Timer.h" />
-    <ClInclude Include="tools.h" />
-    <ClInclude Include="Vector2D.h" />
+    <ClInclude Include="src\Color.h" />
+    <ClInclude Include="src\Cursor.h" />
+    <ClInclude Include="src\Layout.h" />
+    <ClInclude Include="src\Logic.h" />
+    <ClInclude Include="src\Piece.h" />
+    <ClInclude Include="src\PieceSet.h" />
+    <ClInclude Include="src\Selection.h" />
+    <ClInclude Include="src\Timer.h" />
+    <ClInclude Include="src\tools.h" />
+    <ClInclude Include="src\Vector2D.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="jigsaw.cpp" />
-    <ClCompile Include="logic.cpp" />
-    <ClCompile Include="Piece.cpp" />
-    <ClCompile Include="PieceSet.cpp" />
-    <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="tools.cpp" />
-    <ClCompile Include="Vector2D.cpp" />
+    <ClCompile Include="src\jigsaw.cpp" />
+    <ClCompile Include="src\Logic.cpp" />
+    <ClCompile Include="src\Piece.cpp" />
+    <ClCompile Include="src\PieceSet.cpp" />
+    <ClCompile Include="src\Timer.cpp" />
+    <ClCompile Include="src\tools.cpp" />
+    <ClCompile Include="src\vector2D.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

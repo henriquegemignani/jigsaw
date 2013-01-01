@@ -1,7 +1,7 @@
 #ifndef LOGIC_H_
 #define LOGIC_H_
 
-#include "SDL/SDL_events.h"
+#include "SDL_events.h"
 
 #include "PieceSet.h"
 #include "Cursor.h"

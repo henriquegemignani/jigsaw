@@ -3,9 +3,9 @@
 #include <cmath>
 #include <iostream>
 #include <algorithm>
-#include "SDL/SDL.h"
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_opengl.h"
+#include "SDL.h"
+#include "SDL_image.h"
+#include "SDL_opengl.h"
 #ifdef _WIN32
 #include <Windows.h>
 #include <Commdlg.h>

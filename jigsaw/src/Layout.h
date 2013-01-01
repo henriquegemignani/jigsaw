@@ -1,7 +1,7 @@
 #ifndef LAYOUT_H_
 #define LAYOUT_H_
 
-#include "SDL/SDL_stdinc.h"
+#include "SDL_stdinc.h"
 
 #include "Vector2D.h"
 

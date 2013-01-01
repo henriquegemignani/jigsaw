@@ -1,7 +1,7 @@
 #include "tools.h"
 
 #include <iostream>
-#include "SDL/SDL_opengl.h"
+#include "SDL_opengl.h"
 
 bool CheckGLError(char *file, int line) {
     bool ret = false;
