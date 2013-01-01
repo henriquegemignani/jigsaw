@@ -1,54 +1,20 @@
 // Code wrote by Henrique Gemignani Passos Lima
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_opengl.h"
-#include "Timer.h"
-#include "Piece.h"
-#include "PieceSet.h"
-#include "Drag.h"
-#include <iostream>
-#include <algorithm>
-#include <ctime>
-#include <cmath>
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-
 #include "logic.h"
 
-//Screen attributes
-#define SCREEN_WIDTH 1000
-#define SCREEN_HEIGHT 1000
-#define SCREEN_BPP 32
-#define MAX_SCREEN_SCALE 0.9
+#include <set>
+#include <algorithm>
 
-int RESOLUTION_WIDTH = -1, RESOLUTION_HEIGHT = -1;
+#include "Piece.h"
 
-// The frame rate
-#define FRAMES_PER_SECOND 60
-
-void minmax(double *a, double *b) {
+/*void minmax(double *a, double *b) {
     double aux = *a;
     *a = std::min(*a, *b);
     *b = std::max(aux, *b);
-}
-
-void printTime(FILE *out, int time) {
-    time /= 1000; // Time now in seconds.
-    int seconds = time % 60;
-    time /= 60;
-    int minutes = time % 60;
-    time /= 60;
-    if(time > 0)
-        fprintf(out, "%dh ", time);
-    if(minutes > 0)
-        fprintf(out, "%dmin ", minutes);
-    fprintf(out, "%ds", seconds);
-}
+}*/
 
 Logic::Logic(const Layout& layout)
-    :   layout_(layout), pieces_(layout.width(), layout.height()) {}
+    :   layout_(layout), pieces_(layout) {}
 
 void Logic::Start() {
     pieces_.Scramble();
@@ -59,19 +25,19 @@ void Logic::HandleEvent(const SDL_Event& event) {
         // do nothing
     }
     else if( event.type == SDL_MOUSEBUTTONDOWN ) {
-        if(event.button.button == SDL_BUTTON_LEFT && !rightdrag) {
+        if(event.button.button == SDL_BUTTON_LEFT/* && !rightdrag*/) {
             leftDown(event.button);
 
         } else if(event.button.button == SDL_BUTTON_RIGHT) {
-            rightDown(event.button);
+            //rightDown(event.button);
         }
 
     } else if( event.type == SDL_MOUSEBUTTONUP ) {
-        if(event.button.button == SDL_BUTTON_LEFT && rect_up) {
+        if(event.button.button == SDL_BUTTON_LEFT/* && rect_up*/) {
             leftUp(event.button);
 
         } else if(event.button.button == SDL_BUTTON_RIGHT) {
-            rightUp(event.button);
+            //rightUp(event.button);
         }
     }
     else if( event.type == SDL_MOUSEMOTION ) {
@@ -81,17 +47,24 @@ void Logic::HandleEvent(const SDL_Event& event) {
 }
 
 void Logic::leftDown(const SDL_MouseButtonEvent& button) {
-    cursor_.offset = layout_.ScreenToGame(button.x, button.y);
+    cursor_.position = layout_.ScreenToGame(button.x, button.y);
 
-    if(rect_up) {
+    selection_.origin = Vector2D(floor(cursor_.position.x), floor(cursor_.position.y));
+    selection_.topleft = selection_.origin;
+    selection_.pieces.insert(pieces_.get_current(int(cursor_.position.x), int(cursor_.position.y)));
+    selection_.pieces.insert(pieces_.get_current(int(cursor_.position.x) + 1, int(cursor_.position.y)));
+    selection_.pieces.insert(pieces_.get_current(int(cursor_.position.x), int(cursor_.position.y) + 1));
+    selection_.pieces.insert(pieces_.get_current(int(cursor_.position.x) + 1, int(cursor_.position.y) + 1));
+
+    cursor_.offset = cursor_.position - selection_.origin;
+
+    /* if(rect_up) {
         int startx = (int)(drag_offset_x);
         int starty = (int)(drag_offset_y);
         for(int i = 0; i < rectsizex; i++)
             for(int j = 0; j < rectsizey; j++)
                 pieces_.get_current(startx + i, starty + j)->set_color(Color(1.0, 1.0, 1.0));
     }
-
-
     rect_up = !(cursor_.offset.x < drag_offset_x || drag_end_x + 1 < cursor_.offset.x ||
         cursor_.offset.y < drag_offset_y || drag_end_y + 1 < cursor_.offset.y);
     if(!rect_up) {
@@ -100,18 +73,10 @@ void Logic::leftDown(const SDL_MouseButtonEvent& button) {
         drag_end_y = drag_offset_y = temp.y;
         rectsizex = rectsizey = 1;
         rect_up = true;
-    }
-    leftdrag = true;
-    // Store the piece we're dragging.
-    selected_x = (int)(cursor_.offset.x);
-    selected_y = (int)(cursor_.offset.y);
-
-    // Store the position of the piece relative to the mouse
-    cursor_.offset.x = (selected_x - cursor_.offset.x) / layout_.width();
-    cursor_.offset.y = (selected_y - cursor_.offset.y) / layout_.height();
+    }*/
 }
 
-void Logic::rightDown(const SDL_MouseButtonEvent& button) {
+void Logic::rightDown(const SDL_MouseButtonEvent& button) {/*
     rightdrag = true;
 
     if(rect_up) {
@@ -126,12 +91,19 @@ void Logic::rightDown(const SDL_MouseButtonEvent& button) {
 
     // Store the rect origin.
     drag_offset_x = (double)(layout_.width()) * event.motion.x / screenwidth;
-    drag_offset_y = (double)(layout_.height()) * event.motion.y / screenheight;
+    drag_offset_y = (double)(layout_.height()) * event.motion.y / screenheight;*/
 }
 
 void Logic::leftUp(const SDL_MouseButtonEvent& button) {
-    if(!rect_up) return;
 
+    Piece* piece = NULL;
+    for(auto it : selection_.pieces) {
+        piece = it;
+        break;
+    }
+    selection_.pieces.clear();
+
+    /*
     int finalx = layout_.width() * event.motion.x / screenwidth;
     int finaly = layout_.height() * event.motion.y / screenheight;
     int startx = (int)(drag_offset_x);
@@ -164,14 +136,15 @@ void Logic::leftUp(const SDL_MouseButtonEvent& button) {
             }
         }
     }
-    selected_x = selected_y = -1;
-    moves++;
+    drag_offset_x = drag_offset_y = drag_end_x = drag_end_y = -1;
     rect_up = false;
     leftdrag = false;
-    drag_offset_x = drag_offset_y = drag_end_x = drag_end_y = -1;
+    selected_x = selected_y = -1;*/
+    
+    //moves++;
 }
 
-void Logic::rightUp(const SDL_MouseButtonEvent& button) {
+void Logic::rightUp(const SDL_MouseButtonEvent& button) {/*
     // Store the rect end
     drag_end_x = (double)(layout_.width()) * event.motion.x / screenwidth;
     drag_end_y = (double)(layout_.height()) * event.motion.y / screenheight;
@@ -199,5 +172,5 @@ void Logic::rightUp(const SDL_MouseButtonEvent& button) {
         for(int i = 0; i < rectsizex; i++)
             for(int j = 0; j < rectsizey; j++)
                 pieces_.get_current(startx + i, starty + j)->set_color(Color(0.5, 0.5, 1.0));
-    }
+    }*/
 }

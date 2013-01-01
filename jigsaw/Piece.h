@@ -6,29 +6,25 @@
 #include "Color.h"
 
 class Piece {
-public:
+  public:
     Piece(int x, int y, int nx, int ny);
     virtual ~Piece();
 
     void Render();
-    void CustomRender(const Cursor&) const;
-    void CustomRender(double x, double y) const;
+    void CustomRender(const Cursor&, const Vector2D&) const;
 
     void Move(int x, int y);
     bool Matches(int x, int y);
 
 	void set_color(Color c) { color = c; }
 	void set_alpha(double a) { alpha = a; }
-	void QueueRenderPosition(Vector2D pos) {
-		queue_pos = pos;
-		position_queued = true;
-	}
-private:
-	Vector2D position, size, tex_origin, queue_pos;
-	bool position_queued;
+
+  private:
+    void internalRender() const;
+
+	Vector2D position, size, tex_origin;
 	Color color;
 	double alpha;
-    void internalRender() const;
 };
 
 #endif /* PIECE_H_ */

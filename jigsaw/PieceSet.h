@@ -1,11 +1,11 @@
 #ifndef PIECESET_H_
 #define PIECESET_H_
 
+class Layout;
 class Piece;
-
 class PieceSet {
 public:
-	PieceSet(int nx, int ny);
+    PieceSet(const Layout&);
 	~PieceSet(void);
 
 	void Scramble();
@@ -14,8 +14,8 @@ public:
 	int width() const { return width_; }
 	int height() const { return height_; }
 	int get_matches() const { return matches; }
-	Piece* get_piece(int i, int j) { return pieces[i][j]; }
-	Piece* get_current(int i, int j) { return current[i][j]; }
+	Piece* get_piece(int i, int j) const { return pieces[i][j]; }
+	Piece* get_current(int i, int j) const { return current[i][j]; }
 
 private:
 	int width_, height_;

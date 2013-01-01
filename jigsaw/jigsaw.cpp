@@ -246,15 +246,12 @@ int main(int argc, char *argv[]) {
     srand((unsigned int) time(NULL));
 
     changeResolution(screenwidth, screenheight);
-	PieceSet *pieces = new PieceSet(nx, ny);
-	pieces->Scramble();
 
     //The frame rate regulator
     Timer fps, timer;
 
     int moves = 0;
 
-    int selected_x = -1, selected_y = -1;
     double drag_offset_x, drag_offset_y;
     double drag_end_x, drag_end_y;
 	drag_offset_x = drag_offset_y = drag_end_x = drag_end_y = -1;
@@ -266,6 +263,7 @@ int main(int argc, char *argv[]) {
 
     Layout layout(nx, ny, screenwidth, screenheight);
     Logic logic(layout);
+    logic.Start();
     while( quit == false ) {
         // Start the frame timer
         fps.start();
@@ -280,20 +278,26 @@ int main(int argc, char *argv[]) {
                 logic.HandleEvent(event);
             }
         }
-        for(int i = 0; i < nx; i++)
-            for(int j = 0; j < ny; j++) {
-                // Dont't render the dragged rect, if we're dragging one.
-                if((int)(drag_offset_x) <= i && i <= (int)(drag_end_x) &&
-                   (int)(drag_offset_y) <= j && j <= (int)(drag_end_y)) {
-                    if(leftdrag)
-                        continue;
-                    else if(rect_up)
-                        glColor3f(0.50, 0.50, 1.0);
-                } else
-                    glColor3f(1.0, 1.0, 1.0);
-                pieces->get_current(i,j)->Render();
-            }
 
+        // Draw the simple pieces
+        for(int i = 0; i < nx; i++) {
+            for(int j = 0; j < ny; j++) {
+                Piece* p = logic.pieces().get_current(i,j);
+                const bool in_selection = logic.selection().pieces.find(p) != logic.selection().pieces.end();
+                if(in_selection) continue;
+                // Determine color (check if piece is in dragged rect?)
+                //glColor3f(0.50, 0.50, 1.0);
+                glColor3f(1.0, 1.0, 1.0);
+                p->Render();
+            }
+        }
+
+        // Draw the pieces we are dragging
+        for(auto it : logic.selection().pieces) {
+            it->CustomRender(logic.cursor(), logic.selection().topleft);
+        }
+
+        /*
         // Dragging one piece, render it on mouse. Also, keep the position of the mouse relative to the piece constant.
         if(leftdrag && !rect_up && selected_x != -1 && selected_y != -1)
             pieces->get_current(selected_x,selected_y)->CustomRender(logic.cursor());
@@ -318,6 +322,8 @@ int main(int argc, char *argv[]) {
             glRectd( drag_offset_x / nx, drag_offset_y / ny, position_x, position_y );
             glDisable(GL_BLEND);
         }
+        */
+
         //Update screen
         SDL_GL_SwapBuffers();
 
@@ -330,7 +336,7 @@ int main(int argc, char *argv[]) {
     }
     FILE *out = fopen("out.txt", "a");
 	fprintf(out, "Puzzle \"%s\" - %d x %d: ", argv[1], nx, ny);
-	if((pieces->get_matches()) == total) {
+    if((logic.pieces().get_matches()) == total) {
 		fprintf(out, "Success with %d moves in ", moves);
 		printTime(out, timer.get_ticks());
 	} else {

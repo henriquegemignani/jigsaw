@@ -19,12 +19,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -76,6 +78,7 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="Cursor.h" />
     <ClInclude Include="Drag.h" />
+    <ClInclude Include="Layout.h" />
     <ClInclude Include="logic.h" />
     <ClInclude Include="Piece.h" />
     <ClInclude Include="PieceSet.h" />
@@ -90,7 +93,6 @@
     <ClCompile Include="logic.cpp" />
     <ClCompile Include="Piece.cpp" />
     <ClCompile Include="PieceSet.cpp" />
-    <ClCompile Include="Selection.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="tools.cpp" />
     <ClCompile Include="Vector2D.cpp" />

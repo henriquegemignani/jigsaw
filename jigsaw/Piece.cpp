@@ -5,18 +5,17 @@
 
 Piece::Piece(int x, int y, int nx, int ny) : color(1,1,1), alpha(1.0) {
 	size = Vector2D(1.0 / nx, 1.0 / ny);
-	position = Vector2D(x * size.x, y * size.y);
+	position = Vector2D(x, y);
 	tex_origin = Vector2D((x)/(double)(nx), (y)/(double)(ny));
-	position_queued = false;
 }
 
 void Piece::Move(int x, int y) {
-    position.x = x * size.x;
-    position.y = y * size.y;
+    position.x = x;
+    position.y = y;
 }
 
 bool Piece::Matches(int x, int y) {
-	Vector2D diff = position - Vector2D(x * size.x, y * size.y);
+	Vector2D diff = position - Vector2D(x, y);
     return diff.NormOne() < 1.0E-6;
 }
 
@@ -24,15 +23,11 @@ Piece::~Piece() {
     // TODO Auto-generated destructor stub
 }
 
-void Piece::CustomRender(const Cursor& cursor) const {
-    Vector2D total = cursor.position + cursor.offset;
-    CustomRender(total.x, total.y);
-}
-
-void Piece::CustomRender(double x, double y) const {
+void Piece::CustomRender(const Cursor& cursor, const Vector2D& topleft) const {
+    Vector2D total = (cursor.position + position - topleft - cursor.offset).Scale(size);
     glPushMatrix();
     glLoadIdentity();
-    glTranslated(x, y, 0.0);
+    glTranslated(total.x, total.y, 0.0);
     //Start quad
     internalRender();
     //Reset
@@ -40,14 +35,10 @@ void Piece::CustomRender(double x, double y) const {
 }
 
 void Piece::Render() {
+    Vector2D total = position.Scale(size);
     glPushMatrix();
     glLoadIdentity();
-	if(!position_queued) {
-		glTranslated( position.x, position.y, 0 );
-	} else {
-		glTranslated( queue_pos.x, queue_pos.y, 0.1 );
-		position_queued = false;
-	}
+    glTranslated(total.x, total.y, 0);
     //Start quad
     internalRender();
     //Reset

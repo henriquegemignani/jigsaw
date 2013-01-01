@@ -1,13 +1,16 @@
-#include <cstdlib>
 #include "PieceSet.h"
-#include "Piece.h"
 
-PieceSet::PieceSet(int nx, int ny) : width_(nx), height_(ny) {
-    pieces = new Piece**[nx];
-    current = new Piece**[nx];
+#include <cstdlib>
+
+#include "Piece.h"
+#include "Layout.h"
+
+PieceSet::PieceSet(const Layout& layout) : width_(layout.num_x()), height_(layout.num_y()) {
+    pieces = new Piece**[width_];
+    current = new Piece**[width_];
     for(int i = 0; i < width_; i++) {
-        pieces[i] = new Piece*[ny];
-        current[i] = new Piece*[ny];
+        pieces[i] = new Piece*[height_];
+        current[i] = new Piece*[height_];
         for(int j = 0; j < height_; j++)
             current[i][j] = pieces[i][j] = new Piece(i, j, width_, height_);
     }
