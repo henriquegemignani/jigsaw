@@ -30,7 +30,7 @@ int RESOLUTION_WIDTH = -1, RESOLUTION_HEIGHT = -1;
 // The frame rate
 #define FRAMES_PER_SECOND 60
 
-void shaders_init();
+void InitializeProgram();
 
 GLuint loadTex ( char *filename, int *image_width, int *image_height ) {
     GLuint retval;
@@ -277,7 +277,7 @@ int main(int argc, char *argv[]) {
     if( init() == false )
         return 1;
     InitOpenGLExtensions();
-    shaders_init();
+    InitializeProgram();
 
     int image_width, image_height;
     GLuint thetexture = loadTex(FileName, &image_width, &image_height);

@@ -1,5 +1,6 @@
 // Code wrote by Henrique Gemignani Passos Lima
 
+#include <vector>
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -9,104 +10,100 @@
 #include "SDL_image.h"
 #include "SDL_opengl.h"
 
-char vsFile[1][256] = { "null.vert" };
-char fsFile[1][256] = { "null.frag" };
+#define NEW_LINE "\n"
 
-GLhandleARB fShad[1];
-GLhandleARB vShad[1];
-GLhandleARB gl2Program[2];
-GLboolean gl2ProgramStatus[1] = {GL_FALSE};
+GLuint CreateShader(GLenum eShaderType, const std::string &strShaderFile) {
+	GLuint shader = glCreateShader(eShaderType);
+	const char *strFileData = strShaderFile.c_str();
+	glShaderSource(shader, 1, &strFileData, NULL);
 
-bool loadShader( GLhandleARB shader, char* fn) {
-    FILE *fp;
-    bool ret = true;
+	glCompileShader(shader);
 
-    if (!(fp = fopen(fn,"rb"))) {
-        return false;
-    }
+	GLint status;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+	if (status == GL_FALSE) {
+		GLint infoLogLength;
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-    fseek(fp, 0, SEEK_END);
-    int length = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog(shader, infoLogLength, NULL, strInfoLog);
 
-    GLubyte *buf = new GLubyte[length+1];
+		const char *strShaderType = NULL;
+		switch(eShaderType) {
+		case GL_VERTEX_SHADER: strShaderType = "vertex"; break;
+		case GL_GEOMETRY_SHADER: strShaderType = "geometry"; break;
+		case GL_FRAGMENT_SHADER: strShaderType = "fragment"; break;
+		}
 
-    fread( buf, 1, length, fp);
-    buf[length] = '\0'; // make it a regular C string so str* functions work
+		fprintf(stderr, "Compile failure in %s shader:\n%s\n", strShaderType, strInfoLog);
+		delete[] strInfoLog;
+	}
 
-    glShaderSourceARB( shader, 1, (const char**)&buf, &length);
-
-    if (glGetError() != 0) {
-        ret = false;
-    }
-
-    fclose(fp);
-
-    delete []buf;
-    return ret;
+	return shader;
 }
 
-GLboolean compileShader( GLhandleARB shader) {
-    GLint      infoLogLength;
-    GLint      compileStatus;   
+GLuint CreateProgram(const std::vector<GLuint> &shaderList) {
+	GLuint program = glCreateProgram();
 
-    glCompileShaderARB(shader);
+	for(size_t iLoop = 0; iLoop < shaderList.size(); iLoop++)
+		glAttachShader(program, shaderList[iLoop]);
 
-    glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &compileStatus);
-    glGetObjectParameterivARB(shader, GL_OBJECT_INFO_LOG_LENGTH_ARB, &infoLogLength);
+	glLinkProgram(program);
 
-    printf("Compile status: %d\n", compileStatus);
+	GLint status;
+	glGetProgramiv (program, GL_LINK_STATUS, &status);
+	if (status == GL_FALSE) 	{
+		GLint infoLogLength;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-    if (infoLogLength) {
-        GLcharARB *infoLog = (GLcharARB *) malloc(infoLogLength);
-        glGetInfoLogARB(shader, infoLogLength, NULL, infoLog);
-        printf("Info Log: %s\n", infoLog);
-        free(infoLog);
-    }
-    return compileStatus;
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
+		fprintf(stderr, "Linker failure: %s\n", strInfoLog);
+		delete[] strInfoLog;
+	}
+
+	for(size_t iLoop = 0; iLoop < shaderList.size(); iLoop++)
+		glDetachShader(program, shaderList[iLoop]);
+
+	return program;
 }
 
-GLboolean linkProgram( GLhandleARB program) {
-    GLint      infoLogLength;
-    GLint      linkStatus;
+GLuint theProgram;
 
-    glLinkProgramARB(program);
+const std::string strVertexShader(
+"#version 120" NEW_LINE
 
-    glGetObjectParameterivARB(program, GL_OBJECT_LINK_STATUS_ARB, &linkStatus);
-    glGetObjectParameterivARB(program, GL_OBJECT_INFO_LOG_LENGTH_ARB, &infoLogLength);
+"varying vec2 texture_coordinate;" NEW_LINE
+"varying vec4 colors;" NEW_LINE
 
-    printf("Link status: %d\n", linkStatus);
+"void main(void) { " NEW_LINE
+	"gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;" NEW_LINE
+    "texture_coordinate = vec2(gl_MultiTexCoord0);" NEW_LINE
+    "colors = gl_Color;" NEW_LINE
+"}"
+);
 
-    if (infoLogLength) {
-        GLcharARB *infoLog = (GLcharARB *) malloc(infoLogLength);
-        glGetInfoLogARB(program, infoLogLength, NULL, infoLog);
-        printf("Info Log: %s\n", infoLog);
-        free(infoLog);
-    }
-    return linkStatus;
-}
+const std::string strFragmentShader(
+"#version 120" NEW_LINE
 
-void shaders_init() {
-    int i = 0;
-    vShad[i] = glCreateShaderObjectARB( GL_VERTEX_SHADER_ARB );
-    fShad[i] = glCreateShaderObjectARB( GL_FRAGMENT_SHADER_ARB );
-    gl2Program[i] = glCreateProgramObjectARB();
+"in vec2 texture_coordinate;" NEW_LINE
+"in vec4 colors;" NEW_LINE
+"uniform sampler2D texture_id;" NEW_LINE
 
-    glAttachObjectARB( gl2Program[i], vShad[i] );
-    glAttachObjectARB( gl2Program[i], fShad[i] );
+"void main(void) {" NEW_LINE
+"   gl_FragColor = texture2D(texture_id, texture_coordinate) * colors;" NEW_LINE
+"}"
+);
 
-    if (!loadShader( vShad[i], vsFile[i])) {
-        printf("Warning: unable to load vertex shader file \"%s\"\n", vsFile[i]);
-    }
-    if (!loadShader( fShad[i], fsFile[i])){
-        printf("Warning: unable to load fragment shader file \"%s\"\n", fsFile[i]);
-    }
+void InitializeProgram()
+{
+	std::vector<GLuint> shaderList;
 
-    printf("Compiling vertex shader: '%s'\n", vsFile[i]);
-    compileShader( vShad[i] );
-    printf("Compiling fragment shader: '%s'\n", fsFile[i]);
-    compileShader( fShad[i] );
+	shaderList.push_back(CreateShader(GL_VERTEX_SHADER, strVertexShader));
+	shaderList.push_back(CreateShader(GL_FRAGMENT_SHADER, strFragmentShader));
 
-    printf("Linking program\n");
-    gl2ProgramStatus[i] = linkProgram( gl2Program[i] ); // wwlk
+	theProgram = CreateProgram(shaderList);
+    glUseProgram(theProgram);
+
+	std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
 }

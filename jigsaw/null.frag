@@ -1,9 +1,14 @@
 //
-// Trivial fragment shader
+// Fragment shader
+//
 
+#version 130
 
-void main (void)
-{
-	gl_FragColor = vec4( 0.5);
+in vec2 texture_coordinate;
+in vec4 colors;
+uniform sampler2D texture_id;
+out vec4 FragmentColor;
 
+void main(void) {
+	FragmentColor = texture(texture_id, texture_coordinate) * colors;
 }
