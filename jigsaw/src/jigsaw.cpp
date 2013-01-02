@@ -14,7 +14,7 @@
 #endif
 
 #include "tools.h"
-#include "logic.h"
+#include "Logic.h"
 #include "Timer.h"
 #include "Piece.h"
 #include "PieceSet.h"

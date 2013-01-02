@@ -1,6 +1,6 @@
 // Code wrote by Henrique Gemignani Passos Lima
 
-#include "logic.h"
+#include "Logic.h"
 
 #include <algorithm>
 #include <iostream>
