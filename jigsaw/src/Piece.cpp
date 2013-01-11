@@ -19,9 +19,7 @@ bool Piece::Matches(int x, int y) {
     return diff.NormOne() < 1.0E-6;
 }
 
-Piece::~Piece() {
-    // TODO Auto-generated destructor stub
-}
+Piece::~Piece() {}
 
 void Piece::CustomRender(const Cursor& cursor, const Vector2D& topleft) const {
     Vector2D total = (cursor.position + position_ - topleft - cursor.offset).Scale(size_);
@@ -46,23 +44,16 @@ void Piece::Render() {
 }
 
 void Piece::internalRender() const {
-    //Start quad
-    glBegin( GL_QUADS );
-        //Draw square
-        glTexCoord2d(tex_origin_.x, tex_origin_.y);
-        glVertex2d(0, 0);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-        //glTexCoord2d(tex_end_x, tex_origin_y);
-		glTexCoord2d(tex_origin_.x + size_.x, tex_origin_.y);
-        glVertex2d(size_.x, 0);
+    GLdouble   vertices[] = { 0.0, 0.0, size_.x, 0.0, size_.x, size_.y, 0.0, size_.y };
+    GLdouble tex_coords[] = { tex_origin_.x, tex_origin_.y, tex_origin_.x + size_.x, tex_origin_.y, tex_origin_.x + size_.x, tex_origin_.y + size_.y, tex_origin_.x, tex_origin_.y + size_.y };
+    glVertexPointer(2, GL_DOUBLE, 0, vertices);
+    glTexCoordPointer(2, GL_DOUBLE, 0, tex_coords);
 
-        //glTexCoord2d(tex_end_x, tex_end_y);
-		glTexCoord2d(tex_origin_.x + size_.x, tex_origin_.y + size_.y);
-        glVertex2d(size_.x, size_.y);
+    glDrawArrays(GL_QUADS, 0, 4);
 
-        //glTexCoord2d(tex_origin_x, tex_end_y);
-		glTexCoord2d(tex_origin_.x, tex_origin_.y + size_.y);
-        glVertex2d(0, size_.y);
-    //End quad
-    glEnd();
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }

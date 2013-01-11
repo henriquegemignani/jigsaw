@@ -1,5 +1,7 @@
 
 *.sdf
+*.exe
+out.txt
 /Debug
 /ipch
 /Release
